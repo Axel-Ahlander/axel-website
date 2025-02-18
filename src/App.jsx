@@ -1,35 +1,37 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { createContext, useState } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import Nav from './nav/nav';
+import Home from './home/home';
+import Coffee from './coffee/coffee';
+
+export const CoffeeContext = createContext();
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [images, setImages] = useState([]);
+  const [isHovered, setIsHovered] = useState(false); // Add hover state here
+
+  // Function to fetch new coffee images
+  const fetchNewImage = async () => {
+    if (images.length > 9) return; // Limit to 10 images
+    try {
+      const response = await fetch("/api/random.json");
+
+      const data = await response.json();
+      setImages((prevImages) => [...prevImages, data.file]); // Append new image
+    } catch (error) {
+      console.error("Error fetching coffee image:", error);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <CoffeeContext.Provider value={{ images, fetchNewImage, isHovered, setIsHovered }}>
+      <Nav />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/coffee" element={<Coffee />} />
+      </Routes>
+    </CoffeeContext.Provider>
+  );
 }
 
-export default App
+export default App;
